@@ -1,0 +1,590 @@
+/* ---------- Colores (modo claro y oscuro) ---------- */
+:root {
+    --fondo: #f5f6f8;
+    --tarjeta: #ffffff;
+    --texto: #1c2330;
+    --suave: #5d6676;
+    --borde: #dde1e7;
+    --acento: #3451c7;
+    --acento-texto: #ffffff;
+    --acento-suave: #e9edfc;
+    --bien: #2a7d3c;
+    --bien-suave: #e7f4ea;
+    --mal: #c0392b;
+    --mal-suave: #fcebea;
+    --alto: #d9650b;
+    --pista: #eceef2;
+    color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --fondo: #121519;
+        --tarjeta: #1b1f26;
+        --texto: #e6e9ee;
+        --suave: #9ba4b2;
+        --borde: #2d333d;
+        --acento: #7d93ff;
+        --acento-texto: #10131a;
+        --acento-suave: #232a43;
+        --bien: #5fcf78;
+        --bien-suave: #1b3123;
+        --mal: #ff7a6e;
+        --mal-suave: #3b2022;
+        --alto: #ff9a45;
+        --pista: #272c35;
+        color-scheme: dark;
+    }
+}
+
+/* ---------- Base ---------- */
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    background: var(--fondo);
+    color: var(--texto);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.pagina {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 32px 16px 48px;
+}
+
+h1, h2 {
+    line-height: 1.2;
+    margin: 0;
+}
+
+code {
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 0.9em;
+    background: var(--pista);
+    color: var(--texto);
+    padding: 1px 5px;
+    border-radius: 4px;
+}
+
+button {
+    font: inherit;
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+:focus-visible {
+    outline: 2px solid var(--acento);
+    outline-offset: 2px;
+}
+
+/* ---------- Encabezado ---------- */
+.encabezado {
+    margin-bottom: 24px;
+}
+
+.etiqueta {
+    margin: 0 0 6px;
+    color: var(--acento);
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.encabezado h1 {
+    font-size: clamp(1.6rem, 5vw, 2.2rem);
+}
+
+.subtitulo {
+    margin: 8px 0 0;
+    color: var(--suave);
+    max-width: 60ch;
+}
+
+/* ---------- Tarjetas ---------- */
+.tarjeta {
+    background: var(--tarjeta);
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
+.tarjeta h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.15rem;
+    margin-bottom: 12px;
+}
+
+.paso {
+    display: inline-grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--acento-suave);
+    color: var(--acento);
+    font-size: 0.85rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.ayuda {
+    margin: 0 0 16px;
+    color: var(--suave);
+    font-size: 0.95rem;
+}
+
+/* ---------- Controles ---------- */
+.controles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.contador {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.contador span {
+    color: var(--suave);
+    font-size: 0.9rem;
+}
+
+.contador strong {
+    min-width: 1.5em;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.boton-cuadro {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--borde);
+    background: var(--tarjeta);
+    color: var(--texto);
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.boton-cuadro:hover:not(:disabled) {
+    border-color: var(--acento);
+}
+
+.ejemplos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.ejemplos > span {
+    color: var(--suave);
+    font-size: 0.9rem;
+    margin-right: 2px;
+}
+
+.chip {
+    border: 1px solid var(--borde);
+    background: var(--tarjeta);
+    color: var(--texto);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 0.85rem;
+}
+
+.chip:hover {
+    border-color: var(--acento);
+    color: var(--acento);
+}
+
+.chip-borrar {
+    color: var(--suave);
+}
+
+/* ---------- Matriz ---------- */
+.tabla-scroll {
+    overflow-x: auto;
+    margin: 0 -4px;
+    padding: 4px;
+}
+
+.matriz {
+    border-collapse: separate;
+    border-spacing: 6px;
+}
+
+.matriz th {
+    color: var(--suave);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 0 4px;
+}
+
+.matriz .esquina {
+    font-weight: 400;
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+.matriz input {
+    width: 4.6rem;
+    padding: 8px 6px;
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    background: var(--fondo);
+    color: var(--texto);
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+}
+
+.matriz input:focus {
+    outline: none;
+    border-color: var(--acento);
+    box-shadow: 0 0 0 3px var(--acento-suave);
+    background: var(--tarjeta);
+}
+
+.fila-mal input {
+    border-color: var(--mal);
+}
+
+.suma {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.9rem;
+    padding-left: 6px;
+    color: var(--suave);
+}
+
+.suma .icono {
+    margin-left: 6px;
+    font-weight: 700;
+}
+
+.fila-bien .suma {
+    color: var(--bien);
+}
+
+.fila-mal .suma {
+    color: var(--mal);
+}
+
+.pendiente {
+    color: var(--suave);
+}
+
+.mensaje-error {
+    margin: 8px 0 0;
+    color: var(--mal);
+    font-size: 0.9rem;
+}
+
+.acciones {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.boton-principal {
+    background: var(--acento);
+    color: var(--acento-texto);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 22px;
+    font-weight: 600;
+}
+
+.boton-principal:hover {
+    filter: brightness(1.08);
+}
+
+.ayuda-tecla {
+    color: var(--suave);
+    font-size: 0.85rem;
+}
+
+/* ---------- Resultados ---------- */
+.resultado {
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 8px;
+}
+
+.resultado-bien {
+    background: var(--bien-suave);
+    border-left: 4px solid var(--bien);
+}
+
+.resultado-mal {
+    background: var(--mal-suave);
+    border-left: 4px solid var(--mal);
+}
+
+/* Barras (se usan en π y en la convergencia) */
+.pista {
+    position: relative;
+    display: block;
+    height: 14px;
+    background: var(--pista);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.barra {
+    display: block;
+    height: 100%;
+    border-radius: 4px;
+}
+
+.barra-pi {
+    background: var(--acento);
+}
+
+.barra-alto {
+    background: var(--alto);
+}
+
+.barra-bajo {
+    background: var(--bien);
+}
+
+/* π */
+.lista-pi {
+    display: grid;
+    gap: 10px;
+}
+
+.fila-pi {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr 4rem;
+    align-items: center;
+    gap: 12px;
+}
+
+.fila-pi .nombre {
+    color: var(--suave);
+    font-size: 0.9rem;
+}
+
+.fila-pi .valor {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+/* Mixing time */
+.mixing {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+}
+
+.mixing-numero {
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--acento);
+    font-variant-numeric: tabular-nums;
+}
+
+.mixing-texto {
+    color: var(--suave);
+}
+
+/* Convergencia */
+.convergencia {
+    max-height: 440px;
+    overflow-y: auto;
+}
+
+.conv-fila {
+    display: grid;
+    grid-template-columns: 2.5rem 4.2rem 1fr 8.5rem;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 6px;
+    border-radius: 6px;
+    font-variant-numeric: tabular-nums;
+}
+
+.conv-fila .t {
+    text-align: right;
+    color: var(--suave);
+}
+
+.conv-fila .nota {
+    color: var(--bien);
+    font-weight: 600;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.conv-encabezado {
+    position: sticky;
+    top: 0;
+    background: var(--tarjeta);
+    color: var(--suave);
+    font-size: 0.8rem;
+    font-weight: 600;
+    z-index: 1;
+}
+
+.regla {
+    position: relative;
+    height: 1.2em;
+}
+
+.regla span {
+    position: absolute;
+    top: 0;
+}
+
+.regla span:nth-child(2) {
+    transform: translateX(-50%);
+}
+
+/* Línea del umbral 0.25 dentro de cada barra */
+.umbral {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 25%;
+    border-left: 2px dashed var(--texto);
+    opacity: 0.55;
+}
+
+.cruce {
+    background: var(--bien-suave);
+}
+
+/* Fórmulas */
+.formulas dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 8px 16px;
+}
+
+.formulas dt {
+    font-weight: 600;
+}
+
+.formulas dd {
+    margin: 0;
+    color: var(--suave);
+}
+
+.pie {
+    text-align: center;
+    color: var(--suave);
+    font-size: 0.85rem;
+    margin-top: 24px;
+}
+
+/* ---------- Pantallas pequeñas ---------- */
+@media (max-width: 560px) {
+    .tarjeta {
+        padding: 16px;
+    }
+
+    .matriz input {
+        width: 3.8rem;
+    }
+
+    .conv-fila {
+        grid-template-columns: 2rem 3.8rem 1fr;
+    }
+
+    .conv-fila .nota {
+        grid-column: 2 / -1;
+    }
+
+    .conv-fila .nota:empty {
+        display: none;
+    }
+
+    .formulas dl {
+        grid-template-columns: 1fr;
+        gap: 2px;
+    }
+
+    .formulas dd {
+        margin-bottom: 8px;
+    }
+}
+
+/* ---------- Pantalla de carga y errores de Blazor ---------- */
+#blazor-error-ui {
+    background: lightyellow;
+    color: #222;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
+
+.loading-progress {
+    position: absolute;
+    display: block;
+    width: 8rem;
+    height: 8rem;
+    inset: 20vh 0 auto 0;
+    margin: 0 auto;
+}
+
+.loading-progress circle {
+    fill: none;
+    stroke: var(--pista);
+    stroke-width: 0.6rem;
+    transform-origin: 50% 50%;
+    transform: rotate(-90deg);
+}
+
+.loading-progress circle:last-child {
+    stroke: var(--acento);
+    stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
+    transition: stroke-dasharray 0.05s ease-in-out;
+}
+
+.loading-progress-text {
+    position: absolute;
+    text-align: center;
+    font-weight: bold;
+    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+}
+
+.loading-progress-text:after {
+    content: var(--blazor-load-percentage-text, "Cargando");
+}

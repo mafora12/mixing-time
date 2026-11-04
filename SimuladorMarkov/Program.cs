@@ -101,10 +101,11 @@ namespace SimuladorMarkov
                     else
                     {
                         // Convertir cada texto a número (InvariantCulture: el decimal es el punto)
+                        // IsFinite rechaza "NaN" o "Infinity", que también se pueden leer como double
                         bool sonNumeros = true;
                         for (int j = 0; j < n; j++)
                         {
-                            if (double.TryParse(partes[j], NumberStyles.Float, CultureInfo.InvariantCulture, out double valor))
+                            if (double.TryParse(partes[j], NumberStyles.Float, CultureInfo.InvariantCulture, out double valor) && double.IsFinite(valor))
                                 P[i, j] = valor;
                             else
                                 sonNumeros = false;

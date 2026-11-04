@@ -1,0 +1,382 @@
+﻿@page "/"
+
+<PageTitle>Simulador de Markov</PageTitle>
+
+<main class="pagina">
+    <header class="encabezado">
+        <p class="etiqueta">Procesos Estocásticos</p>
+        <h1>Simulador de cadenas de Markov</h1>
+        <p class="subtitulo">
+            Escribe la matriz de transición P y calcula si es regular, su distribución
+            estacionaria π y su mixing time.
+        </p>
+    </header>
+
+    @* ---------------- 1. Entrada de la matriz ---------------- *@
+    <section class="tarjeta">
+        <h2><span class="paso">1</span> Matriz de transición P</h2>
+        <p class="ayuda">
+            P[i, j] es la probabilidad de pasar del estado i al estado j. Cada fila debe sumar 1.
+            Puedes escribir <code>0.5</code>, <code>0,5</code> o <code>1/2</code>.
+        </p>
+
+        <div class="controles">
+            <div class="contador">
+                <span>Estados</span>
+                <button class="boton-cuadro" @onclick="() => CambiarEstados(n - 1)" disabled="@(n <= MIN_ESTADOS)" aria-label="Quitar un estado">−</button>
+                <strong>@n</strong>
+                <button class="boton-cuadro" @onclick="() => CambiarEstados(n + 1)" disabled="@(n >= MAX_ESTADOS)" aria-label="Agregar un estado">+</button>
+            </div>
+
+            <div class="ejemplos">
+                <span>Ejemplos:</span>
+                @foreach (var ejemplo in ejemplos)
+                {
+                    <button class="chip" @onclick="() => CargarEjemplo(ejemplo.Filas)">@ejemplo.Nombre</button>
+                }
+                <button class="chip chip-borrar" @onclick="Limpiar">Limpiar</button>
+            </div>
+        </div>
+
+        <div class="tabla-scroll">
+            <table class="matriz" @onkeydown="TeclaPresionada">
+                <thead>
+                    <tr>
+                        <th class="esquina">de \ a</th>
+                        @for (int j = 0; j < n; j++)
+                        {
+                            <th>E@(j + 1)</th>
+                        }
+                        <th>Suma</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < n; i++)
+                    {
+                        int fila = i;   // copia local para usarla dentro de los eventos
+                        string error = ErrorDeFila(fila);
+                        bool completa = FilaCompleta(fila);
+                        string clase = !completa ? "" : (error == "" ? "fila-bien" : "fila-mal");
+
+                        <tr class="@clase">
+                            <th>E@(fila + 1)</th>
+                            @for (int j = 0; j < n; j++)
+                            {
+                                int col = j;
+                                <td>
+                                    <input type="text" inputmode="decimal" autocomplete="off"
+                                           aria-label="@($"P[{fila + 1}, {col + 1}]")"
+                                           value="@celdas[fila, col]"
+                                           @oninput="e => CambiarCelda(fila, col, e.Value?.ToString())" />
+                                </td>
+                            }
+                            <td class="suma">
+                                @if (completa)
+                                {
+                                    <span>@SumaDeFila(fila).ToString("F4")</span>
+                                    <span class="icono">@(error == "" ? "✓" : "✗")</span>
+                                }
+                                else
+                                {
+                                    <span class="pendiente">…</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @* Mensajes de error de las filas completas que están mal *@
+        @for (int i = 0; i < n; i++)
+        {
+            if (FilaCompleta(i) && ErrorDeFila(i) != "")
+            {
+                <p class="mensaje-error">Fila @(i + 1): @ErrorDeFila(i).</p>
+            }
+        }
+
+        <div class="acciones">
+            <button class="boton-principal" @onclick="Calcular">Calcular</button>
+            <span class="ayuda-tecla">o presiona Enter</span>
+        </div>
+        @if (avisoGeneral != "")
+        {
+            <p class="mensaje-error">@avisoGeneral</p>
+        }
+    </section>
+
+    @* ---------------- Resultados ---------------- *@
+    @if (calculado)
+    {
+        <section class="tarjeta">
+            <h2><span class="paso">2</span> ¿Es regular?</h2>
+            @if (regular)
+            {
+                <p class="resultado resultado-bien">
+                    <strong>Sí es regular.</strong> P<sup>@kRegular</sup> tiene todas sus entradas &gt; 0,
+                    así que la cadena sí tiene un estado estable.
+                </p>
+            }
+            else
+            {
+                <p class="resultado resultado-mal">
+                    <strong>No es regular.</strong> Ninguna potencia de P<sup>1</sup> a P<sup>@maxK</sup>
+                    tiene todas sus entradas &gt; 0. No se puede alcanzar un estado estable,
+                    así que no se calculan π ni el mixing time.
+                </p>
+            }
+        </section>
+
+        @if (regular)
+        {
+            <section class="tarjeta">
+                <h2><span class="paso">3</span> Distribución estacionaria π</h2>
+                <div class="lista-pi">
+                    @for (int j = 0; j < pi.Length; j++)
+                    {
+                        <div class="fila-pi">
+                            <span class="nombre">Estado @(j + 1)</span>
+                            <span class="pista"><span class="barra barra-pi" style="width: @Porcentaje(pi[j])"></span></span>
+                            <span class="valor">@pi[j].ToString("F4")</span>
+                        </div>
+                    }
+                </div>
+            </section>
+
+            <section class="tarjeta">
+                <h2><span class="paso">4</span> Mixing time</h2>
+                @if (mixingTime > 0)
+                {
+                    <div class="mixing">
+                        <span class="mixing-numero">@mixingTime</span>
+                        <span class="mixing-texto">
+                            @(mixingTime == 1 ? "paso" : "pasos"). En t = @mixingTime la distancia es
+                            d(@mixingTime) = @distancias[mixingTime - 1].ToString("F4") ≤ @Markov.UMBRAL.ToString("F2")
+                        </span>
+                    </div>
+                }
+                else
+                {
+                    <p class="resultado resultado-mal">
+                        No se alcanzó d(t) ≤ @Markov.UMBRAL.ToString("F2") en @Markov.MAX_PASOS pasos.
+                    </p>
+                }
+            </section>
+
+            <section class="tarjeta">
+                <h2><span class="paso">5</span> Convergencia hacia π</h2>
+                <p class="ayuda">
+                    Cada barra es d(t): la barra completa equivale a distancia 1.
+                    La línea punteada marca el umbral 0.25.
+                </p>
+
+                <div class="convergencia">
+                    <div class="conv-fila conv-encabezado">
+                        <span class="t">t</span>
+                        <span class="d">d(t)</span>
+                        <span class="regla">
+                            <span style="left: 0">0</span>
+                            <span style="left: 25%">0.25</span>
+                            <span style="right: 0">1</span>
+                        </span>
+                        <span class="nota"></span>
+                    </div>
+                    @for (int t = 1; t <= distancias.Count; t++)
+                    {
+                        double d = distancias[t - 1];
+                        bool cruza = t == mixingTime;
+                        <div class="conv-fila @(cruza ? "cruce" : "")">
+                            <span class="t">@t</span>
+                            <span class="d">@d.ToString("F4")</span>
+                            <span class="pista">
+                                <span class="barra @(d <= Markov.UMBRAL ? "barra-bajo" : "barra-alto")" style="width: @Porcentaje(d)"></span>
+                                <span class="umbral"></span>
+                            </span>
+                            <span class="nota">@(cruza ? "← cruza el umbral" : "")</span>
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+    }
+
+    @* ---------------- Fórmulas (para la exposición) ---------------- *@
+    <section class="tarjeta formulas">
+        <h2>Fórmulas usadas</h2>
+        <dl>
+            <dt>Regular</dt>
+            <dd>Existe k ≤ (n − 1)² + 1 tal que todas las entradas de P<sup>k</sup> son &gt; 0.</dd>
+            <dt>Distribución estacionaria</dt>
+            <dd>π<sub>nuevo</sub>[j] = Σ<sub>i</sub> π[i] · P[i, j], empezando en π = (1/n, …, 1/n), hasta que cambie menos de 10<sup>−10</sup>.</dd>
+            <dt>Distancia</dt>
+            <dd>d(t) = máx<sub>i</sub> ½ Σ<sub>j</sub> |P<sup>t</sup>[i, j] − π[j]|</dd>
+            <dt>Mixing time</dt>
+            <dd>El primer t con d(t) ≤ 0.25.</dd>
+        </dl>
+    </section>
+
+    <footer class="pie">Hecho en C# con Blazor WebAssembly.</footer>
+</main>
+
+@code {
+    const int MIN_ESTADOS = 2;
+    const int MAX_ESTADOS = 8;
+
+    // Número de estados y lo que el usuario escribió en cada casilla
+    int n = 2;
+    string[,] celdas = new string[2, 2] { { "", "" }, { "", "" } };
+
+    // Resultados (se llenan al presionar "Calcular")
+    bool calculado = false;
+    bool regular = false;
+    int kRegular = -1;
+    int maxK = 0;
+    double[] pi = new double[0];
+    List<double> distancias = new List<double>();
+    int mixingTime = -1;
+    string avisoGeneral = "";
+
+    // Matrices de ejemplo para cargar con un clic
+    record Ejemplo(string Nombre, string[][] Filas);
+
+    List<Ejemplo> ejemplos = new List<Ejemplo>
+    {
+        new Ejemplo("2 estados", new[] { new[] { "0.9", "0.1" }, new[] { "0.5", "0.5" } }),
+        new Ejemplo("Periódica", new[] { new[] { "0", "1" }, new[] { "1", "0" } }),
+        new Ejemplo("Clima (3 estados)", new[]
+        {
+            new[] { "1/2", "1/4", "1/4" },
+            new[] { "1/2", "0",   "1/2" },
+            new[] { "1/4", "1/4", "1/2" }
+        }),
+        new Ejemplo("Fila mal", new[] { new[] { "0.5", "0.6" }, new[] { "0.5", "0.5" } }),
+    };
+
+    // Cambia el tamaño de la matriz, conservando lo que ya estaba escrito
+    void CambiarEstados(int nuevoN)
+    {
+        if (nuevoN < MIN_ESTADOS || nuevoN > MAX_ESTADOS) return;
+
+        string[,] nuevas = new string[nuevoN, nuevoN];
+        for (int i = 0; i < nuevoN; i++)
+            for (int j = 0; j < nuevoN; j++)
+                nuevas[i, j] = (i < n && j < n) ? celdas[i, j] : "";
+
+        n = nuevoN;
+        celdas = nuevas;
+        BorrarResultados();
+    }
+
+    void CargarEjemplo(string[][] filas)
+    {
+        n = filas.Length;
+        celdas = new string[n, n];
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                celdas[i, j] = filas[i][j];
+        BorrarResultados();
+    }
+
+    void Limpiar()
+    {
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                celdas[i, j] = "";
+        BorrarResultados();
+    }
+
+    void CambiarCelda(int i, int j, string? texto)
+    {
+        celdas[i, j] = texto ?? "";
+        BorrarResultados();
+    }
+
+    void BorrarResultados()
+    {
+        calculado = false;
+        avisoGeneral = "";
+    }
+
+    void TeclaPresionada(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") Calcular();
+    }
+
+    // Una fila está completa si no tiene casillas vacías
+    bool FilaCompleta(int i)
+    {
+        for (int j = 0; j < n; j++)
+            if (string.IsNullOrWhiteSpace(celdas[i, j])) return false;
+        return true;
+    }
+
+    // Revisa la fila i: devuelve "" si está bien, o el mensaje del problema
+    string ErrorDeFila(int i)
+    {
+        double[] fila = new double[n];
+        for (int j = 0; j < n; j++)
+        {
+            if (string.IsNullOrWhiteSpace(celdas[i, j]))
+                return "tiene casillas vacías";
+            if (!Markov.LeerNumero(celdas[i, j], out fila[j]))
+                return $"\"{celdas[i, j]}\" no es un número";
+        }
+        return Markov.RevisarFila(fila);
+    }
+
+    double SumaDeFila(int i)
+    {
+        double suma = 0;
+        for (int j = 0; j < n; j++)
+            if (Markov.LeerNumero(celdas[i, j], out double valor)) suma += valor;
+        return suma;
+    }
+
+    // Convierte un valor entre 0 y 1 en un ancho CSS, por ejemplo "33.33%"
+    string Porcentaje(double valor) => $"{Math.Min(valor, 1) * 100:0.##}%";
+
+    // Lo mismo que hace Main en la consola: validar → regular → π → mixing time
+    void Calcular()
+    {
+        BorrarResultados();
+
+        // 1. Validar todas las filas
+        for (int i = 0; i < n; i++)
+        {
+            if (ErrorDeFila(i) != "")
+            {
+                // Las filas completas con error ya muestran su mensaje en rojo
+                if (FilaCompleta(i))
+                    avisoGeneral = "Corrige las filas marcadas en rojo antes de calcular.";
+                else
+                    avisoGeneral = $"La fila {i + 1} tiene casillas vacías.";
+                return;
+            }
+        }
+
+        // Pasar el texto de las casillas a la matriz P
+        double[,] P = new double[n, n];
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                Markov.LeerNumero(celdas[i, j], out P[i, j]);
+
+        if (!Markov.EsEstocastica(P)) return;
+
+        // 2. ¿Es regular?
+        maxK = (n - 1) * (n - 1) + 1;
+        regular = Markov.EsRegular(P, out kRegular);
+
+        if (regular)
+        {
+            // 3. Distribución estacionaria
+            pi = Markov.DistribucionEstacionaria(P);
+
+            // 4. Mixing time (y 5. la lista de distancias para la gráfica)
+            distancias = new List<double>();
+            mixingTime = Markov.MixingTime(P, pi, distancias);
+        }
+
+        calculado = true;
+    }
+}

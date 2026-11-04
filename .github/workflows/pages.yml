@@ -1,0 +1,51 @@
+# Publica la web (SimuladorWeb) en GitHub Pages cada vez que se sube algo a main.
+name: Publicar en GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # permite correrlo a mano desde la pestaña Actions
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Compilar la web
+        run: dotnet publish SimuladorWeb/SimuladorWeb.csproj -c Release -o release
+
+      # La página vive en https://<usuario>.github.io/<repositorio>/
+      # así que la ruta base debe ser /<repositorio>/ y no /
+      - name: Ajustar la ruta base
+        run: |
+          sed -i 's|<base href="/" />|<base href="/${{ github.event.repository.name }}/" />|g' release/wwwroot/index.html
+          grep -q '<base href="/${{ github.event.repository.name }}/" />' release/wwwroot/index.html
+          cp release/wwwroot/index.html release/wwwroot/404.html
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: release/wwwroot
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
