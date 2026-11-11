@@ -7,20 +7,20 @@ namespace SimuladorMarkov
 {
     class Program
     {
-        // Umbral de distancia que define el mixing time
+        
         const double UMBRAL = 0.25;
 
-        // Margen de error permitido al revisar que una fila sume 1
+        
         const double TOLERANCIA = 0.0001;
 
-        // Número máximo de pasos al buscar el mixing time
+
         const int MAX_PASOS = 10000;
 
         static void Main(string[] args)
         {
             // Para que se vean bien las tildes y el carácter █
             Console.OutputEncoding = Encoding.UTF8;
-            // Para que los números se muestren con punto decimal (0.8333 y no 0,8333)
+            // Para que los numeros se muestren con punto decimal 0.8333 y no 0,8333
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 
             string respuesta = "s";
